@@ -11,12 +11,16 @@ class MNISTModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.layer1 = nn.Linear(784, 128)
+        self.bn1 = nn.BatchNorm1d(128)
         self.relu = nn.ReLU()
+        self.dropout = nn.Dropout(0.25)
         self.layer2 = nn.Linear(128, 10)
     def forward(self, x):
         x = x.view(x.size(0), -1)
         x = self.layer1(x)
+        x = self.bn1(x)
         x = self.relu(x)
+        x = self.dropout(x)
         x = self.layer2(x)
         return x
 def train_and_evaluate():
@@ -54,12 +58,10 @@ def train_and_evaluate():
 
             outputs = model(images)
             loss = criterion(outputs, labels)
-
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            optimizer.zero_grad()
             running_loss += loss.item()
-
         epoch_loss = running_loss / len(train_loader)
         ann_losses.append(epoch_loss)
         print(f"Epoch {epoch+1}/5 | Loss: {epoch_loss:.4f}")
